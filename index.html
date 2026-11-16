@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khám Phá Các Vùng Biển Việt Nam</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --land-color: #4CAF50;
+            --internal-color: #81D4FA;
+            --territorial-color: #29B6F6;
+            --contiguous-color: #039BE5;
+            --eez-color: #0277BD;
+            --shelf-color: #8D6E63;
+            --baseline-color: #FF5252;
+            --text-dark: #333;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: var(--text-dark);
+        }
+
+        header {
+            background-color: #01579B;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 { margin: 0; font-size: 28px; text-transform: uppercase; }
+        header p { margin: 5px 0 0; font-size: 14px; opacity: 0.8; }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 15px;
+            gap: 20px;
+        }
+
+        /* Phần sơ đồ bên trái */
+        .map-section {
+            flex: 1 1 50%;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .map-title { text-align: center; margin-bottom: 20px; color: #01579B; }
+
+        .diagram {
+            display: flex;
+            align-items: flex-end;
+            height: 350px;
+            min-width: 600px; /* Đảm bảo ko bị vỡ trên mobile */
+            position: relative;
+            margin-top: 20px;
+        }
+
+        .zone {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            border-right: 2px dashed rgba(255,255,255,0.5);
+        }
+
+        .zone:hover {
+            filter: brightness(1.1);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        .zone span.distance {
+            font-size: 12px;
+            font-weight: normal;
+            margin-top: 5px;
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        /* Các khối biển */
+        .z-land { width: 15%; height: 100%; background-color: var(--land-color); border-radius: 8px 0 0 8px; cursor: default;}
+        .z-internal { width: 15%; height: 90%; background-color: var(--internal-color); color: #333;}
+        .z-territorial { width: 20%; height: 80%; background-color: var(--territorial-color); }
+        .z-contiguous { width: 20%; height: 70%; background-color: var(--contiguous-color); }
+        .z-eez { width: 30%; height: 60%; background-color: var(--eez-color); border-radius: 0 8px 8px 0; border-right: none;}
+        
+        /* Thềm lục địa (nằm dưới đáy) */
+        .z-shelf {
+            position: absolute;
+            bottom: 0;
+            left: 15%;
+            width: 85%;
+            height: 40px;
+            background-color: var(--shelf-color);
+            border-radius: 0 0 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .z-shelf:hover { filter: brightness(1.2); }
+
+        /* Đường cơ sở */
+        .baseline-marker {
+            position: absolute;
+            left: 30%;
+            top: 0;
+            bottom: 40px;
+            width: 4px;
+            background-color: var(--baseline-color);
+            z-index: 5;
+            cursor: pointer;
+        }
+        .baseline-marker::before {
+            content: "Đường cơ sở";
+            position: absolute;
+            top: -25px;
+            left: -40px;
+            background: var(--baseline-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        /* Phần nội dung bên phải */
+        .info-section {
+            flex: 1 1 40%;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .info-placeholder {
+            text-align: center;
+            color: #777;
+            margin-top: 50px;
+        }
+        .info-placeholder img { width: 100px; opacity: 0.3; margin-bottom: 20px;}
+
+        .info-content { display: none; animation: fadeIn 0.5s ease; }
+        .info-content h2 { color: #01579B; border-bottom: 2px solid #01579B; padding-bottom: 10px; margin-top: 0;}
+        
+        .info-box {
+            background: #f9f9f9;
+            border-left: 4px solid #0277BD;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        .info-box h4 { margin: 0 0 8px 0; color: #333; }
+        .info-box ul { margin: 0; padding-left: 20px; line-height: 1.6; }
+        
+        .highlight { color: #FF5252; font-weight: bold; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+
+        @media (max-width: 768px) {
+            .container { flex-direction: column; }
+            .info-section { order: -1; margin-bottom: 20px; } /* Đưa info lên trên ở mobile */
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Khám Phá Các Vùng Biển Việt Nam</h1>
+        <p>Bấm vào từng vùng trên sơ đồ để xem chế độ pháp lý chi tiết</p>
+    </header>
+
+    <div class="container">
+        <!-- BẢN ĐỒ TƯƠNG TÁC -->
+        <div class="map-section">
+            <h3 class="map-title">Sơ đồ mặt cắt các vùng biển</h3>
+            <div class="diagram">
+                <!-- Đất liền -->
+                <div class="zone z-land">Đất liền</div>
+                <!-- Nội thủy -->
+                <div class="zone z-internal" onclick="showInfo('noithuy')">
+                    Nội thủy
+                </div>
+                <!-- Đường cơ sở -->
+                <div class="baseline-marker" onclick="showInfo('coso')"></div>
+                <!-- Lãnh hải -->
+                <div class="zone z-territorial" onclick="showInfo('lanhhai')">
+                    Lãnh hải
+                    <span class="distance">12 hải lý</span>
+                </div>
+                <!-- Tiếp giáp lãnh hải -->
+                <div class="zone z-contiguous" onclick="showInfo('tiepgiap')">
+                    Vùng tiếp giáp
+                    <span class="distance">24 hải lý</span>
+                </div>
+                <!-- Đặc quyền kinh tế -->
+                <div class="zone z-eez" onclick="showInfo('dacquyen')">
+                    Đặc quyền kinh tế
+                    <span class="distance">200 hải lý</span>
+                </div>
+                <!-- Thềm lục địa -->
+                <div class="z-shelf" onclick="showInfo('themlucdia')">
+                    Thềm lục địa (Đáy biển & lòng đất dưới đáy biển)
+                </div>
+            </div>
+        </div>
+
+        <!-- KHUNG HIỂN THỊ NỘI DUNG -->
+        <div class="info-section">
+            <div id="placeholder" class="info-placeholder">
+                <svg fill="#ccc" height="100px" width="100px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                <h3>Hãy bấm vào một vùng biển trên sơ đồ</h3>
+                <p>Nội dung bài học sẽ hiển thị tại đây.</p>
+            </div>
+
+            <div id="content-display" class="info-content">
+                <h2 id="title">Tên vùng biển</h2>
+                <div class="info-box">
+                    <h4>📍 Vị trí / Phạm vi</h4>
+                    <ul id="range"></ul>
+                </div>
+                <div class="info-box">
+                    <h4>🇻🇳 Quyền của Việt Nam (Quốc gia ven biển)</h4>
+                    <ul id="vn-rights"></ul>
+                </div>
+                <div class="info-box" style="border-left-color: #FF5252;">
+                    <h4>🌍 Quyền / Nghĩa vụ của Quốc gia khác</h4>
+                    <ul id="other-rights"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT XỬ LÝ DỮ LIỆU TỪ SÁCH GIÁO KHOA -->
+    <script>
+        const data = {
+            'coso': {
+                title: "Đường cơ sở",
+                range: ["Là ranh giới/mốc chuẩn dùng để tính chiều rộng các vùng biển khác (lãnh hải, tiếp giáp, đặc quyền kinh tế...).", "Việt Nam sử dụng đường cơ sở thẳng nối 24 điểm ven bờ (từ Mũi Nai - Kiên Giang đến đảo Cồn Cỏ - Quảng Trị) và điểm phân định Vịnh Bắc Bộ."],
+                vn_rights: ["Đường cơ sở là ranh giới bên ngoài của vùng nội thủy.", "Mọi tính toán về không gian biển đều bắt nguồn từ đường này."],
+                other_rights: ["Các tàu thuyền nước ngoài bắt đầu phải tuân thủ nghiêm ngặt các quy định của quốc gia ven biển khi vượt qua đường này hướng vào bờ."]
+            },
+            'noithuy': {
+                title: "Vùng Nội Thủy",
+                range: ["Là vùng nước tiếp liền với bờ biển, nằm ở phía trong đường cơ sở."],
+                vn_rights: ["Chế độ pháp lý được quy định bởi pháp luật quốc gia và quốc tế.", "Nhà nước thực hiện <span class='highlight'>chủ quyền hoàn toàn, tuyệt đối và đầy đủ</span> như trên lãnh thổ đất liền.", "Chủ quyền bao trùm cả vùng trời bên trên, vùng đáy biển và lòng đất dưới đáy biển."],
+                other_rights: ["Tàu thuyền và phương tiện bay nước ngoài muốn ra vào hoặc bay trên không phận nội thủy <b>phải xin phép</b> và chỉ được lưu thông khi cơ quan thẩm quyền VN đồng ý."]
+            },
+            'lanhhai': {
+                title: "Vùng Lãnh Hải",
+                range: ["Là vùng biển nằm giữa nội thủy và các vùng biển thuộc quyền chủ quyền.", "Chiều rộng <span class='highlight'>12 hải lý</span> tính từ đường cơ sở."],
+                vn_rights: ["Có <b>chủ quyền toàn vẹn và đầy đủ</b> đối với tài nguyên sinh vật và phi sinh vật, hiện vật khảo cổ lịch sử.", "Chủ quyền mở rộng đến vùng trời trên lãnh hải, đáy và lòng đất đáy biển.", "Có quyền thi hành biện pháp ngăn cản việc đi qua có gây hại."],
+                other_rights: ["Tàu thuyền nước ngoài có quyền <span class='highlight'>đi qua không gây hại</span> (phải đi liên tục, không dừng lại, không làm phương hại đến hòa bình, an ninh).", "Tàu ngầm phải nổi trên mặt nước và treo cờ quốc tịch.", "Phương tiện bay phải xin phép khi vào vùng trời lãnh hải."]
+            },
+            'tiepgiap': {
+                title: "Vùng Tiếp Giáp Lãnh Hải",
+                range: ["Là vùng biển tiếp liền phía ngoài lãnh hải.", "Rộng 12 hải lý tính từ ranh giới ngoài lãnh hải (Mép ngoài cách đường cơ sở <span class='highlight'>24 hải lý</span>)."],
+                vn_rights: ["Thực hiện sự <b>kiểm soát cần thiết</b> nhằm ngăn ngừa và trừng trị những vi phạm về:", "1. Hải quan", "2. Thuế khóa", "3. Y tế", "4. Nhập cư", "Nhà nước cũng thực hiện quyền chủ quyền và các quyền khác như trong vùng Đặc quyền kinh tế."],
+                other_rights: ["Các quốc gia khác có quyền tự do hàng hải, hàng không (giống như vùng đặc quyền kinh tế) nhưng không được vi phạm các quy định kiểm soát của quốc gia ven biển."]
+            },
+            'dacquyen': {
+                title: "Vùng Đặc Quyền Kinh Tế",
+                range: ["Là vùng biển tiếp liền phía ngoài lãnh hải và hợp với lãnh hải thành một vùng rộng <span class='highlight'>200 hải lý</span> tính từ đường cơ sở."],
+                vn_rights: ["Có <span class='highlight'>quyền chủ quyền</span> về việc thăm dò, khai thác, bảo tồn và quản lý tài nguyên thiên nhiên (sinh vật hoặc không sinh vật) vùng nước, đáy biển.", "Quyền tài phán về: Sản xuất năng lượng từ nước/gió, bảo vệ môi trường biển, nghiên cứu khoa học biển."],
+                other_rights: ["Các quốc gia khác được hưởng 3 quyền tự do cơ bản:", "1. Tự do hàng hải.", "2. Tự do hàng không (bay qua).", "3. Tự do đặt dây cáp và ống dẫn ngầm (không cần xin phép)."]
+            },
+            'themlucdia': {
+                title: "Vùng Thềm Lục Địa",
+                range: ["Là vùng đáy biển và lòng đất dưới đáy biển, tiếp liền nằm ngoài lãnh hải, kéo dài toàn bộ phần tự nhiên của lãnh thổ.", "Mở rộng ít nhất 200 hải lý, tối đa 350 hải lý từ đường cơ sở."],
+                vn_rights: ["Có <span class='highlight'>đặc quyền thăm dò và khai thác</span> tài nguyên khoáng sản, sinh vật định cư ở đáy biển.", "Là đặc quyền riêng, nếu VN không khai thác thì nước khác cũng không được khai thác nếu không có sự đồng ý của VN.", "Có đặc quyền cho phép và quy định việc khoan ở thềm lục địa."],
+                other_rights: ["Có quyền đặt cáp và ống dẫn ngầm.", "Tuy nhiên, <span class='highlight'>tuyến đường ống dẫn ngầm phải được sự thỏa thuận</span> (đồng ý) của Việt Nam.", "Không được đặt thiết bị nghiên cứu nếu không được VN đồng ý."]
+            }
+        };
+
+        function showInfo(zoneKey) {
+            // Ẩn placeholder, hiện nội dung
+            document.getElementById('placeholder').style.display = 'none';
+            document.getElementById('content-display').style.display = 'block';
+
+            // Lấy dữ liệu
+            const info = data[zoneKey];
+
+            // Cập nhật DOM
+            document.getElementById('title').innerHTML = info.title;
+            
+            document.getElementById('range').innerHTML = info.range.map(item => `<li>${item}</li>`).join('');
+            document.getElementById('vn-rights').innerHTML = info.vn_rights.map(item => `<li>${item}</li>`).join('');
+            document.getElementById('other-rights').innerHTML = info.other_rights.map(item => `<li>${item}</li>`).join('');
+
+            // Cuộn trang xuống phần nội dung nếu ở trên mobile
+            if(window.innerWidth <= 768) {
+                document.querySelector('.info-section').scrollIntoView({behavior: "smooth"});
+            }
+        }
+    </script>
+</body>
+</html>
