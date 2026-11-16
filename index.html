@@ -3,319 +3,440 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khám Phá Các Vùng Biển Việt Nam</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <title>Khám phá các vùng biển Việt Nam</title>
+    <!-- Sử dụng font chữ Inter hiện đại -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
-            --land-color: #4CAF50;
-            --internal-color: #81D4FA;
-            --territorial-color: #29B6F6;
-            --contiguous-color: #039BE5;
-            --eez-color: #0277BD;
-            --shelf-color: #8D6E63;
-            --baseline-color: #FF5252;
-            --text-dark: #333;
+            --primary: #0076a3; /* Xanh biển đậm */
+            --primary-light: #e5f4fa;
+            --success: #28a745;
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --radius: 12px;
+            
+            /* Màu các vùng biển */
+            --c-land: #d4e157;
+            --c-internal: #81d4fa;
+            --c-territorial: #29b6f6;
+            --c-contiguous: #03a9f4;
+            --c-eez: #0288d1;
+            --c-shelf: #8d6e63;
         }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f7f6;
-            color: var(--text-dark);
-        }
-
-        header {
-            background-color: #01579B;
-            color: white;
-            text-align: center;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        header h1 { margin: 0; font-size: 28px; text-transform: uppercase; }
-        header p { margin: 5px 0 0; font-size: 14px; opacity: 0.8; }
-
-        .container {
+        /* HEADER */
+        .header {
             display: flex;
-            flex-wrap: wrap;
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 15px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .logo-box {
+            width: 50px; height: 50px; background: var(--primary);
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 24px;
+        }
+        .header-title h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px;}
+        .header-title p { font-size: 14px; color: var(--text-muted); }
+        .header-right button {
+            background: var(--success); color: white; border: none;
+            padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;
+            box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2); transition: 0.2s;
+        }
+        .header-right button:hover { transform: translateY(-2px); }
+
+        /* BỐ CỤC 3 CỘT */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr 380px;
             gap: 20px;
+            margin-bottom: 20px;
         }
 
-        /* Phần sơ đồ bên trái */
-        .map-section {
-            flex: 1 1 50%;
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow-x: auto;
+        /* CARD CHUNG */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border: 1px solid var(--border-color);
+            display: flex; flex-direction: column;
         }
 
-        .map-title { text-align: center; margin-bottom: 20px; color: #01579B; }
-
-        .diagram {
-            display: flex;
-            align-items: flex-end;
-            height: 350px;
-            min-width: 600px; /* Đảm bảo ko bị vỡ trên mobile */
-            position: relative;
-            margin-top: 20px;
-        }
-
-        .zone {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            border-right: 2px dashed rgba(255,255,255,0.5);
-        }
-
-        .zone:hover {
-            filter: brightness(1.1);
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px rgba(0,0,0,0.2);
-            z-index: 10;
-        }
-
-        .zone span.distance {
-            font-size: 12px;
-            font-weight: normal;
-            margin-top: 5px;
-            background: rgba(0,0,0,0.3);
-            padding: 2px 8px;
-            border-radius: 10px;
-        }
-
-        /* Các khối biển */
-        .z-land { width: 15%; height: 100%; background-color: var(--land-color); border-radius: 8px 0 0 8px; cursor: default;}
-        .z-internal { width: 15%; height: 90%; background-color: var(--internal-color); color: #333;}
-        .z-territorial { width: 20%; height: 80%; background-color: var(--territorial-color); }
-        .z-contiguous { width: 20%; height: 70%; background-color: var(--contiguous-color); }
-        .z-eez { width: 30%; height: 60%; background-color: var(--eez-color); border-radius: 0 8px 8px 0; border-right: none;}
+        /* CỘT 1: DANH SÁCH */
+        .list-section { padding: 20px; height: 550px;}
+        .list-header { font-weight: 700; margin-bottom: 15px; font-size: 16px; display: flex; justify-content: space-between;}
+        .badge { background: var(--primary-light); color: var(--primary); padding: 2px 8px; border-radius: 12px; font-size: 12px;}
         
-        /* Thềm lục địa (nằm dưới đáy) */
-        .z-shelf {
-            position: absolute;
-            bottom: 0;
-            left: 15%;
-            width: 85%;
-            height: 40px;
-            background-color: var(--shelf-color);
-            border-radius: 0 0 8px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
+        .list-items { overflow-y: auto; flex: 1; margin-right: -10px; padding-right: 10px; }
+        .list-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px; border-radius: 8px; margin-bottom: 8px;
+            cursor: pointer; transition: 0.2s; border: 1px solid transparent;
         }
-        .z-shelf:hover { filter: brightness(1.2); }
+        .list-item:hover { background: var(--bg-color); }
+        .list-item.active { background: var(--primary-light); border-color: var(--primary); font-weight: 600; color: var(--primary);}
+        .item-number {
+            width: 28px; height: 28px; background: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700; color: var(--text-muted); border: 1px solid var(--border-color);
+        }
+        .list-item.active .item-number { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* Đường cơ sở */
-        .baseline-marker {
-            position: absolute;
-            left: 30%;
-            top: 0;
-            bottom: 40px;
-            width: 4px;
-            background-color: var(--baseline-color);
-            z-index: 5;
-            cursor: pointer;
-        }
-        .baseline-marker::before {
-            content: "Đường cơ sở";
-            position: absolute;
-            top: -25px;
-            left: -40px;
-            background: var(--baseline-color);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            white-space: nowrap;
-        }
-
-        /* Phần nội dung bên phải */
-        .info-section {
-            flex: 1 1 40%;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-
-        .info-placeholder {
-            text-align: center;
-            color: #777;
-            margin-top: 50px;
-        }
-        .info-placeholder img { width: 100px; opacity: 0.3; margin-bottom: 20px;}
-
-        .info-content { display: none; animation: fadeIn 0.5s ease; }
-        .info-content h2 { color: #01579B; border-bottom: 2px solid #01579B; padding-bottom: 10px; margin-top: 0;}
+        /* CỘT 2: SƠ ĐỒ TƯƠNG TÁC */
+        .map-section { padding: 20px; position: relative; height: 550px;}
+        .map-header { position: absolute; top: 20px; left: 20px; z-index: 10;}
+        .map-header h3 { font-size: 14px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px;}
         
-        .info-box {
-            background: #f9f9f9;
-            border-left: 4px solid #0277BD;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 0 8px 8px 0;
+        .diagram-container {
+            width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(to bottom, #ffffff 0%, #e0f2fe 100%); border-radius: 8px; position: relative;
         }
-        .info-box h4 { margin: 0 0 8px 0; color: #333; }
-        .info-box ul { margin: 0; padding-left: 20px; line-height: 1.6; }
         
-        .highlight { color: #FF5252; font-weight: bold; }
+        .sea-layer {
+            position: absolute; display: flex; align-items: flex-end;
+            height: 60%; bottom: 20%; left: 5%; right: 5%;
+        }
+        .layer {
+            height: 100%; position: relative; transition: 0.3s; border-right: 2px dashed rgba(255,255,255,0.4);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .l-land { width: 15%; background: var(--c-land); border-radius: 8px 0 0 8px; }
+        .l-internal { width: 15%; height: 90%; background: var(--c-internal); }
+        .l-territorial { width: 20%; height: 80%; background: var(--c-territorial); }
+        .l-contiguous { width: 20%; height: 70%; background: var(--c-contiguous); }
+        .l-eez { width: 30%; height: 60%; background: var(--c-eez); border-radius: 0 8px 8px 0; border-right: none;}
+        
+        /* Mốc điểm chạm trên sơ đồ */
+        .marker {
+            position: absolute; width: 36px; height: 36px;
+            background: white; border: 3px solid var(--primary); color: var(--primary);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 16px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.3s; z-index: 20;
+        }
+        .marker:hover, .marker.active { transform: scale(1.2); background: var(--primary); color: white; }
+        
+        /* Vị trí các marker */
+        #mk-1 { top: 50%; left: 50%; transform: translate(-50%, -50%); } /* Nội thủy */
+        #mk-2 { top: 50%; left: 50%; transform: translate(-50%, -50%); } /* Lãnh hải */
+        #mk-3 { top: 50%; left: 50%; transform: translate(-50%, -50%); } /* Tiếp giáp */
+        #mk-4 { top: 50%; left: 50%; transform: translate(-50%, -50%); } /* Đặc quyền */
+        #mk-5 { bottom: -20px; left: 50%; background: var(--c-shelf); border-color: white; color: white;} /* Thềm lục địa */
+        
+        .baseline-line { position: absolute; left: 15%; top: -10%; bottom: -10%; width: 2px; background: red; border-left: 2px dashed white;}
+        #mk-6 { top: -20px; left: 15%; transform: translateX(-50%); border-color: red; color: red;} /* Đường cơ sở */
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+        /* CỘT 3: THÔNG TIN CHI TIẾT */
+        .info-section { padding: 24px; display: flex; flex-direction: column; height: 550px;}
+        .info-top span { color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase;}
+        .info-top h2 { font-size: 24px; color: var(--primary); margin: 8px 0; }
+        
+        .tag-list { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;}
+        .tag-list span { background: #f3f4f6; padding: 4px 12px; border-radius: 16px; font-size: 12px; color: #4b5563;}
 
-        @media (max-width: 768px) {
-            .container { flex-direction: column; }
-            .info-section { order: -1; margin-bottom: 20px; } /* Đưa info lên trên ở mobile */
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; background: #f3f4f6; padding: 4px; border-radius: 8px;}
+        .tab-btn {
+            flex: 1; padding: 8px 0; border: none; background: transparent;
+            font-size: 13px; font-weight: 600; color: var(--text-muted);
+            cursor: pointer; border-radius: 6px; transition: 0.3s;
+        }
+        .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        .tab-content { flex: 1; overflow-y: auto; font-size: 14px; line-height: 1.6; color: #374151;}
+        .tab-pane { display: none; animation: fadeIn 0.3s;}
+        .tab-pane.active { display: block; }
+        
+        .tab-pane ul { padding-left: 20px; margin-bottom: 15px;}
+        .tab-pane li { margin-bottom: 8px;}
+        
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color);}
+        .nav-buttons button {
+            padding: 8px 16px; border: 1px solid var(--border-color); background: white;
+            border-radius: 6px; cursor: pointer; color: var(--text-muted); font-weight: 500;
+        }
+        .nav-buttons button:hover { background: #f9fafb; color: var(--primary);}
+
+        /* BOTTOM SECTION */
+        .bottom-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 20px;}
+        .reference-img { text-align: center; padding: 20px; background: white; border-radius: var(--radius);}
+        .reference-img h3 { font-size: 16px; margin-bottom: 15px; text-align: left;}
+        .reference-img div {
+            background: #e5e7eb; height: 150px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            color: #9ca3af; border: 2px dashed #d1d5db;
+        }
+        .guide-list { padding: 20px; }
+        .guide-list h3 { font-size: 16px; margin-bottom: 15px;}
+        .guide-item { display: flex; gap: 10px; margin-bottom: 12px; font-size: 14px;}
+        .guide-item i { color: var(--success); margin-top: 3px;}
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-layout { grid-template-columns: 1fr; }
+            .list-section, .map-section, .info-section { height: auto; min-height: 400px; }
+            .bottom-layout { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Khám Phá Các Vùng Biển Việt Nam</h1>
-        <p>Bấm vào từng vùng trên sơ đồ để xem chế độ pháp lý chi tiết</p>
-    </header>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="logo-box"><i class="fa-solid fa-water"></i></div>
+            <div class="header-title">
+                <p>PHÒNG THỰC HÀNH SỐ - MÔN ĐỊA LÝ</p>
+                <h1>Khám phá Các Vùng Biển Việt Nam</h1>
+            </div>
+        </div>
+        <div class="header-right">
+            <button><i class="fa-solid fa-book-open"></i> Ôn tập kiến thức</button>
+        </div>
+    </div>
 
-    <div class="container">
-        <!-- BẢN ĐỒ TƯƠNG TÁC -->
-        <div class="map-section">
-            <h3 class="map-title">Sơ đồ mặt cắt các vùng biển</h3>
-            <div class="diagram">
-                <!-- Đất liền -->
-                <div class="zone z-land">Đất liền</div>
-                <!-- Nội thủy -->
-                <div class="zone z-internal" onclick="showInfo('noithuy')">
-                    Nội thủy
-                </div>
-                <!-- Đường cơ sở -->
-                <div class="baseline-marker" onclick="showInfo('coso')"></div>
-                <!-- Lãnh hải -->
-                <div class="zone z-territorial" onclick="showInfo('lanhhai')">
-                    Lãnh hải
-                    <span class="distance">12 hải lý</span>
-                </div>
-                <!-- Tiếp giáp lãnh hải -->
-                <div class="zone z-contiguous" onclick="showInfo('tiepgiap')">
-                    Vùng tiếp giáp
-                    <span class="distance">24 hải lý</span>
-                </div>
-                <!-- Đặc quyền kinh tế -->
-                <div class="zone z-eez" onclick="showInfo('dacquyen')">
-                    Đặc quyền kinh tế
-                    <span class="distance">200 hải lý</span>
-                </div>
-                <!-- Thềm lục địa -->
-                <div class="z-shelf" onclick="showInfo('themlucdia')">
-                    Thềm lục địa (Đáy biển & lòng đất dưới đáy biển)
-                </div>
+    <!-- Main 3 Columns -->
+    <div class="main-layout">
+        
+        <!-- CỘT 1: Danh sách vùng biển -->
+        <div class="card list-section">
+            <div class="list-header">
+                <span>Thành phần</span>
+                <span class="badge">6 Phân vùng</span>
+            </div>
+            <!-- Search bar giả lập -->
+            <div style="background: #f3f4f6; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; color: #9ca3af;">
+                <i class="fa-solid fa-search"></i>
+                <span style="font-size: 14px;">Tìm vùng biển...</span>
+            </div>
+
+            <div class="list-items" id="menu-list">
+                <!-- Javascript sẽ render danh sách vào đây -->
             </div>
         </div>
 
-        <!-- KHUNG HIỂN THỊ NỘI DUNG -->
-        <div class="info-section">
-            <div id="placeholder" class="info-placeholder">
-                <svg fill="#ccc" height="100px" width="100px" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-                <h3>Hãy bấm vào một vùng biển trên sơ đồ</h3>
-                <p>Nội dung bài học sẽ hiển thị tại đây.</p>
+        <!-- CỘT 2: Sơ đồ tương tác -->
+        <div class="card map-section">
+            <div class="map-header">
+                <h3>Mô hình cắt ngang vùng biển</h3>
+                <p style="font-size: 12px; color: #6b7280; margin-top: 5px;">Số trên hình khớp với danh sách bên trái</p>
+            </div>
+            
+            <div class="diagram-container">
+                <div class="sea-layer">
+                    <div class="layer l-land"></div>
+                    <div class="layer l-internal">
+                        <div class="marker" id="mk-1" onclick="selectZone(1)">1</div>
+                    </div>
+                    <div class="baseline-line">
+                        <div class="marker" id="mk-6" style="top:-30px;" onclick="selectZone(6)">6</div>
+                    </div>
+                    <div class="layer l-territorial">
+                        <div class="marker" id="mk-2" onclick="selectZone(2)">2</div>
+                    </div>
+                    <div class="layer l-contiguous">
+                        <div class="marker" id="mk-3" onclick="selectZone(3)">3</div>
+                    </div>
+                    <div class="layer l-eez">
+                        <div class="marker" id="mk-4" onclick="selectZone(4)">4</div>
+                    </div>
+                </div>
+                <!-- Marker Thềm lục địa -->
+                <div class="marker" id="mk-5" style="position:absolute; bottom: 10%; right: 30%;" onclick="selectZone(5)">5</div>
+            </div>
+        </div>
+
+        <!-- CỘT 3: Bảng thông tin chi tiết -->
+        <div class="card info-section">
+            <div class="info-top">
+                <span id="info-subtitle">Hồ sơ vùng biển - 01 / 06</span>
+                <h2 id="info-title">Nội thủy</h2>
+                <div class="tag-list" id="info-tags">
+                    <!-- Tags render here -->
+                </div>
             </div>
 
-            <div id="content-display" class="info-content">
-                <h2 id="title">Tên vùng biển</h2>
-                <div class="info-box">
-                    <h4>📍 Vị trí / Phạm vi</h4>
-                    <ul id="range"></ul>
-                </div>
-                <div class="info-box">
-                    <h4>🇻🇳 Quyền của Việt Nam (Quốc gia ven biển)</h4>
-                    <ul id="vn-rights"></ul>
-                </div>
-                <div class="info-box" style="border-left-color: #FF5252;">
-                    <h4>🌍 Quyền / Nghĩa vụ của Quốc gia khác</h4>
-                    <ul id="other-rights"></ul>
-                </div>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('tab1', this)">Khái niệm & Phạm vi</button>
+                <button class="tab-btn" onclick="switchTab('tab2', this)">Quyền của VN</button>
+                <button class="tab-btn" onclick="switchTab('tab3', this)">Nước khác</button>
+            </div>
+
+            <div class="tab-content">
+                <div id="tab1" class="tab-pane active"></div>
+                <div id="tab2" class="tab-pane"></div>
+                <div id="tab3" class="tab-pane"></div>
+            </div>
+
+            <div class="nav-buttons">
+                <button onclick="prevZone()"><i class="fa-solid fa-arrow-left"></i> Phần trước</button>
+                <button onclick="nextZone()">Tiếp theo <i class="fa-solid fa-arrow-right"></i></button>
             </div>
         </div>
     </div>
 
-    <!-- JAVASCRIPT XỬ LÝ DỮ LIỆU TỪ SÁCH GIÁO KHOA -->
+    <!-- Phần dưới: Ảnh tham chiếu và Hướng dẫn -->
+    <div class="bottom-layout">
+        <div class="card reference-img">
+            <h3>Hình tham chiếu từ nhóm học tập</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>[Chèn ảnh: Sơ đồ cắt ngang từ Sách giáo khoa]</div>
+                <div>[Chèn ảnh: Bản đồ 24 điểm nối đường cơ sở]</div>
+            </div>
+            <p style="font-size: 12px; color: #6b7280; margin-top: 10px;">Thay đổi bằng thẻ &lt;img src="..."&gt; trong mã HTML</p>
+        </div>
+        <div class="card guide-list">
+            <h3>Cách sử dụng mô hình</h3>
+            <div class="guide-item">
+                <i class="fa-solid fa-circle-1"></i>
+                <p><b>Chọn vùng biển:</b> Bấm vào số trên màn hình hoặc chọn tên trong danh sách bên trái.</p>
+            </div>
+            <div class="guide-item">
+                <i class="fa-solid fa-circle-2"></i>
+                <p><b>Đọc tài liệu:</b> Chuyển đổi các Tab để đọc Khái niệm, Quyền của quốc gia ven biển và Nước ngoài.</p>
+            </div>
+            <div class="guide-item">
+                <i class="fa-solid fa-circle-3"></i>
+                <p><b>Điều hướng:</b> Dùng nút "Phần trước / Tiếp theo" để duyệt nhanh toàn bộ nội dung.</p>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const data = {
-            'coso': {
-                title: "Đường cơ sở",
-                range: ["Là ranh giới/mốc chuẩn dùng để tính chiều rộng các vùng biển khác (lãnh hải, tiếp giáp, đặc quyền kinh tế...).", "Việt Nam sử dụng đường cơ sở thẳng nối 24 điểm ven bờ (từ Mũi Nai - Kiên Giang đến đảo Cồn Cỏ - Quảng Trị) và điểm phân định Vịnh Bắc Bộ."],
-                vn_rights: ["Đường cơ sở là ranh giới bên ngoài của vùng nội thủy.", "Mọi tính toán về không gian biển đều bắt nguồn từ đường này."],
-                other_rights: ["Các tàu thuyền nước ngoài bắt đầu phải tuân thủ nghiêm ngặt các quy định của quốc gia ven biển khi vượt qua đường này hướng vào bờ."]
+        // DỮ LIỆU CÁC VÙNG BIỂN
+        const zonesData = [
+            {
+                id: 1, name: "Nội thủy",
+                tags: ["Tiếp liền bờ biển", "Chủ quyền tuyệt đối", "Phía trong đường cơ sở"],
+                tab1: `<ul><li>Là vùng nước tiếp liền với bờ biển, nằm ở phía trong đường cơ sở.</li><li>Là một bộ phận lãnh thổ trên biển của quốc gia.</li></ul>`,
+                tab2: `<ul><li>Nhà nước thực hiện <b>chủ quyền hoàn toàn, tuyệt đối và đầy đủ</b> như trên lãnh thổ đất liền.</li><li>Chủ quyền bao trùm cả vùng trời bên trên, vùng đáy biển và lòng đất dưới đáy biển.</li></ul>`,
+                tab3: `<ul><li>Tàu thuyền và phương tiện bay nước ngoài muốn ra vào hoặc bay trên không phận nội thủy <b>phải xin phép</b>.</li><li>Chỉ được lưu thông khi cơ quan thẩm quyền VN đồng ý.</li></ul>`
             },
-            'noithuy': {
-                title: "Vùng Nội Thủy",
-                range: ["Là vùng nước tiếp liền với bờ biển, nằm ở phía trong đường cơ sở."],
-                vn_rights: ["Chế độ pháp lý được quy định bởi pháp luật quốc gia và quốc tế.", "Nhà nước thực hiện <span class='highlight'>chủ quyền hoàn toàn, tuyệt đối và đầy đủ</span> như trên lãnh thổ đất liền.", "Chủ quyền bao trùm cả vùng trời bên trên, vùng đáy biển và lòng đất dưới đáy biển."],
-                other_rights: ["Tàu thuyền và phương tiện bay nước ngoài muốn ra vào hoặc bay trên không phận nội thủy <b>phải xin phép</b> và chỉ được lưu thông khi cơ quan thẩm quyền VN đồng ý."]
+            {
+                id: 2, name: "Lãnh hải",
+                tags: ["Rộng 12 hải lý", "Chủ quyền đầy đủ", "Đi qua không gây hại"],
+                tab1: `<ul><li>Là vùng biển nằm giữa nội thủy và các vùng biển thuộc quyền chủ quyền.</li><li>Chiều rộng: <b>12 hải lý</b> tính từ đường cơ sở ra phía biển.</li></ul>`,
+                tab2: `<ul><li>Có chủ quyền toàn vẹn và đầy đủ về chính trị, kinh tế, an ninh, môi trường.</li><li>Chủ quyền mở rộng đến vùng trời trên lãnh hải, đáy và lòng đất đáy biển.</li></ul>`,
+                tab3: `<ul><li>Tàu thuyền nước ngoài có quyền <b>đi qua không gây hại</b> (phải đi liên tục, không dừng lại, không làm phương hại an ninh).</li><li>Tàu ngầm phải nổi trên mặt nước và treo cờ quốc tịch.</li><li>Phương tiện bay phải xin phép khi vào vùng trời lãnh hải.</li></ul>`
             },
-            'lanhhai': {
-                title: "Vùng Lãnh Hải",
-                range: ["Là vùng biển nằm giữa nội thủy và các vùng biển thuộc quyền chủ quyền.", "Chiều rộng <span class='highlight'>12 hải lý</span> tính từ đường cơ sở."],
-                vn_rights: ["Có <b>chủ quyền toàn vẹn và đầy đủ</b> đối với tài nguyên sinh vật và phi sinh vật, hiện vật khảo cổ lịch sử.", "Chủ quyền mở rộng đến vùng trời trên lãnh hải, đáy và lòng đất đáy biển.", "Có quyền thi hành biện pháp ngăn cản việc đi qua có gây hại."],
-                other_rights: ["Tàu thuyền nước ngoài có quyền <span class='highlight'>đi qua không gây hại</span> (phải đi liên tục, không dừng lại, không làm phương hại đến hòa bình, an ninh).", "Tàu ngầm phải nổi trên mặt nước và treo cờ quốc tịch.", "Phương tiện bay phải xin phép khi vào vùng trời lãnh hải."]
+            {
+                id: 3, name: "Vùng tiếp giáp lãnh hải",
+                tags: ["Rộng 12 hải lý", "Kiểm soát an ninh", "Cách đường cơ sở 24 hải lý"],
+                tab1: `<ul><li>Là vùng biển tiếp liền phía ngoài lãnh hải.</li><li>Rộng 12 hải lý tính từ ranh giới ngoài lãnh hải.</li><li>Mép ngoài cách đường cơ sở <b>24 hải lý</b>.</li></ul>`,
+                tab2: `<ul><li>Thực hiện sự <b>kiểm soát cần thiết</b> nhằm ngăn ngừa và trừng trị những vi phạm về: Hải quan, Thuế, Y tế, Nhập cư.</li><li>Thực hiện quyền chủ quyền và các quyền khác như trong vùng Đặc quyền kinh tế.</li></ul>`,
+                tab3: `<ul><li>Các quốc gia khác có quyền tự do hàng hải, hàng không (bay qua).</li><li>Phải tuân thủ, không được vi phạm các quy định kiểm soát an ninh, hải quan của Việt Nam.</li></ul>`
             },
-            'tiepgiap': {
-                title: "Vùng Tiếp Giáp Lãnh Hải",
-                range: ["Là vùng biển tiếp liền phía ngoài lãnh hải.", "Rộng 12 hải lý tính từ ranh giới ngoài lãnh hải (Mép ngoài cách đường cơ sở <span class='highlight'>24 hải lý</span>)."],
-                vn_rights: ["Thực hiện sự <b>kiểm soát cần thiết</b> nhằm ngăn ngừa và trừng trị những vi phạm về:", "1. Hải quan", "2. Thuế khóa", "3. Y tế", "4. Nhập cư", "Nhà nước cũng thực hiện quyền chủ quyền và các quyền khác như trong vùng Đặc quyền kinh tế."],
-                other_rights: ["Các quốc gia khác có quyền tự do hàng hải, hàng không (giống như vùng đặc quyền kinh tế) nhưng không được vi phạm các quy định kiểm soát của quốc gia ven biển."]
+            {
+                id: 4, name: "Vùng đặc quyền kinh tế",
+                tags: ["200 hải lý", "Quyền chủ quyền", "Tự do hàng hải"],
+                tab1: `<ul><li>Là vùng biển tiếp liền phía ngoài lãnh hải.</li><li>Hợp với lãnh hải thành một vùng rộng <b>200 hải lý</b> tính từ đường cơ sở.</li></ul>`,
+                tab2: `<ul><li>Có <b>quyền chủ quyền</b> về việc thăm dò, khai thác, bảo tồn và quản lý tài nguyên (hải sản, dầu khí...).</li><li>Có quyền tài phán về: Bảo vệ môi trường biển, nghiên cứu khoa học biển, xây dựng đảo nhân tạo.</li></ul>`,
+                tab3: `<ul><li>Các quốc gia khác được hưởng 3 quyền tự do: Tự do hàng hải, Tự do hàng không, Tự do đặt dây cáp và ống dẫn ngầm.</li><li>Việc thực hiện các quyền này không được ảnh hưởng đến quyền lợi của Việt Nam.</li></ul>`
             },
-            'dacquyen': {
-                title: "Vùng Đặc Quyền Kinh Tế",
-                range: ["Là vùng biển tiếp liền phía ngoài lãnh hải và hợp với lãnh hải thành một vùng rộng <span class='highlight'>200 hải lý</span> tính từ đường cơ sở."],
-                vn_rights: ["Có <span class='highlight'>quyền chủ quyền</span> về việc thăm dò, khai thác, bảo tồn và quản lý tài nguyên thiên nhiên (sinh vật hoặc không sinh vật) vùng nước, đáy biển.", "Quyền tài phán về: Sản xuất năng lượng từ nước/gió, bảo vệ môi trường biển, nghiên cứu khoa học biển."],
-                other_rights: ["Các quốc gia khác được hưởng 3 quyền tự do cơ bản:", "1. Tự do hàng hải.", "2. Tự do hàng không (bay qua).", "3. Tự do đặt dây cáp và ống dẫn ngầm (không cần xin phép)."]
+            {
+                id: 5, name: "Thềm lục địa",
+                tags: ["Đáy biển", "Lòng đất dưới đáy", "Khai thác khoáng sản"],
+                tab1: `<ul><li>Gồm đáy biển và lòng đất dưới đáy biển, kéo dài toàn bộ phần tự nhiên của lãnh thổ.</li><li>Bắt đầu từ phía ngoài lãnh hải.</li><li>Mở rộng ít nhất 200 hải lý, tối đa 350 hải lý từ đường cơ sở.</li></ul>`,
+                tab2: `<ul><li>Có <b>đặc quyền thăm dò và khai thác</b> tài nguyên khoáng sản (dầu khí) và sinh vật định cư ở đáy biển.</li><li>Là đặc quyền riêng, nếu VN không khai thác thì nước khác cũng không được khai thác nếu không có sự đồng ý của VN.</li></ul>`,
+                tab3: `<ul><li>Có quyền đặt cáp và ống dẫn ngầm. Tuy nhiên, tuyến đường phải được sự đồng ý của Việt Nam.</li><li>Không được đặt thiết bị, nghiên cứu khoa học dưới đáy biển nếu không được VN đồng ý.</li></ul>`
             },
-            'themlucdia': {
-                title: "Vùng Thềm Lục Địa",
-                range: ["Là vùng đáy biển và lòng đất dưới đáy biển, tiếp liền nằm ngoài lãnh hải, kéo dài toàn bộ phần tự nhiên của lãnh thổ.", "Mở rộng ít nhất 200 hải lý, tối đa 350 hải lý từ đường cơ sở."],
-                vn_rights: ["Có <span class='highlight'>đặc quyền thăm dò và khai thác</span> tài nguyên khoáng sản, sinh vật định cư ở đáy biển.", "Là đặc quyền riêng, nếu VN không khai thác thì nước khác cũng không được khai thác nếu không có sự đồng ý của VN.", "Có đặc quyền cho phép và quy định việc khoan ở thềm lục địa."],
-                other_rights: ["Có quyền đặt cáp và ống dẫn ngầm.", "Tuy nhiên, <span class='highlight'>tuyến đường ống dẫn ngầm phải được sự thỏa thuận</span> (đồng ý) của Việt Nam.", "Không được đặt thiết bị nghiên cứu nếu không được VN đồng ý."]
+            {
+                id: 6, name: "Đường cơ sở",
+                tags: ["Đường chuẩn", "Nối các đảo ven bờ", "Mốc tính chiều rộng"],
+                tab1: `<ul><li>Là ranh giới, mốc chuẩn dùng để tính chiều rộng các vùng biển khác.</li><li>Việt Nam sử dụng đường cơ sở thẳng nối 24 điểm ven bờ (từ Mũi Nai - Hà Tiên đến đảo Cồn Cỏ - Quảng Trị) và điểm phân định Vịnh Bắc Bộ.</li></ul>`,
+                tab2: `<ul><li>Là ranh giới bên ngoài của vùng nội thủy.</li><li>Mọi tính toán về không gian biển, quyền tài phán đều bắt nguồn từ đường này.</li></ul>`,
+                tab3: `<ul><li>Khi tàu thuyền nước ngoài vượt qua đường cơ sở đi vào bờ, phải tuân thủ nghiêm ngặt luật pháp nội địa của quốc gia ven biển.</li></ul>`
             }
-        };
+        ];
 
-        function showInfo(zoneKey) {
-            // Ẩn placeholder, hiện nội dung
-            document.getElementById('placeholder').style.display = 'none';
-            document.getElementById('content-display').style.display = 'block';
+        let currentZoneId = 1;
 
-            // Lấy dữ liệu
-            const info = data[zoneKey];
-
-            // Cập nhật DOM
-            document.getElementById('title').innerHTML = info.title;
-            
-            document.getElementById('range').innerHTML = info.range.map(item => `<li>${item}</li>`).join('');
-            document.getElementById('vn-rights').innerHTML = info.vn_rights.map(item => `<li>${item}</li>`).join('');
-            document.getElementById('other-rights').innerHTML = info.other_rights.map(item => `<li>${item}</li>`).join('');
-
-            // Cuộn trang xuống phần nội dung nếu ở trên mobile
-            if(window.innerWidth <= 768) {
-                document.querySelector('.info-section').scrollIntoView({behavior: "smooth"});
-            }
+        // Render Danh sách bên trái
+        function renderMenuList() {
+            const menuContainer = document.getElementById('menu-list');
+            menuContainer.innerHTML = '';
+            zonesData.forEach(zone => {
+                const div = document.createElement('div');
+                div.className = `list-item ${zone.id === currentZoneId ? 'active' : ''}`;
+                div.onclick = () => selectZone(zone.id);
+                div.innerHTML = `
+                    <div class="item-number">${zone.id < 10 ? '0'+zone.id : zone.id}</div>
+                    <span>${zone.name}</span>
+                `;
+                menuContainer.appendChild(div);
+            });
         }
+
+        // Cập nhật giao diện khi chọn vùng
+        function selectZone(id) {
+            currentZoneId = id;
+            const zone = zonesData.find(z => z.id === id);
+            
+            // 1. Cập nhật Menu Left
+            renderMenuList();
+
+            // 2. Cập nhật Marker trên sơ đồ
+            document.querySelectorAll('.marker').forEach(mk => mk.classList.remove('active'));
+            document.getElementById(`mk-${id}`).classList.add('active');
+
+            // 3. Cập nhật Info Right
+            document.getElementById('info-subtitle').innerText = `Hồ sơ vùng biển - 0${id} / 06`;
+            document.getElementById('info-title').innerText = zone.name;
+            
+            // Tags
+            document.getElementById('info-tags').innerHTML = zone.tags.map(tag => `<span>${tag}</span>`).join('');
+            
+            // Nội dung tab
+            document.getElementById('tab1').innerHTML = `<h3 style="margin-bottom:10px; color:var(--primary); font-size:15px;">📍 Vị trí & Phạm vi</h3>` + zone.tab1;
+            document.getElementById('tab2').innerHTML = `<h3 style="margin-bottom:10px; color:var(--success); font-size:15px;">🇻🇳 Quyền & Nghĩa vụ của Việt Nam</h3>` + zone.tab2;
+            document.getElementById('tab3').innerHTML = `<h3 style="margin-bottom:10px; color:#e3342f; font-size:15px;">🌍 Quyền & Nghĩa vụ của Quốc gia khác</h3>` + zone.tab3;
+
+            // Mặc định nhảy về tab 1 mỗi khi đổi vùng
+            document.querySelectorAll('.tab-btn')[0].click();
+        }
+
+        // Chuyển đổi qua lại giữa các Tab
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        // Nút Next / Prev
+        function nextZone() {
+            let nextId = currentZoneId + 1;
+            if (nextId > zonesData.length) nextId = 1; // Vòng lại
+            selectZone(nextId);
+        }
+
+        function prevZone() {
+            let prevId = currentZoneId - 1;
+            if (prevId < 1) prevId = zonesData.length;
+            selectZone(prevId);
+        }
+
+        // Khởi tạo ban đầu
+        window.onload = () => {
+            selectZone(1);
+        };
     </script>
 </body>
 </html>
